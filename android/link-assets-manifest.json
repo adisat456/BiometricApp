@@ -1,0 +1,9 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/models/mobilefacenet.tflite",
+      "sha1": "e13f377b74251f71023f2009a962674ff68b4bfa"
+    }
+  ]
+}
