@@ -3,6 +3,9 @@
 import RNFS from 'react-native-fs';
 import { unzip } from 'react-native-zip-archive';
 import { loadTensorflowModel } from 'react-native-fast-tflite';
+import { normalizeRGB } from './fastTFLiteHelper';
+import { decodeImageToRGB } from '../utils/imageDecoder';
+
 
 const ZIP_PATH = `${RNFS.DocumentDirectoryPath}/references.zip`;
 const EXTRACT_PATH = `${RNFS.DocumentDirectoryPath}/reference_faces`;
@@ -16,10 +19,7 @@ let model = null;
 async function loadModelIfNeeded() {
   if (!model) {
     try {
-      // model = await loadTensorflowModel(require('../assets/models/mobilefacenet.tflite'));
-      loadTensorflowModel({
-  url: 'https://github.com/atharvakale31/Real-Time_Face_Recognition_Android/blob/master/app/src/main/assets/mobile_face_net.tflite',
-})
+      model = await loadTensorflowModel(require('../assets/models/mobilefacenet.tflite'));
       console.log('✅ Face model loaded in faceDatasetHelper');
     } catch (err) {
       console.error('❌ Failed to load TFLite model:', err);
@@ -64,6 +64,46 @@ async function saveCache(data) {
 /**
  * Extracts embeddings from unzipped face images.
  */
+// export async function generateEmbeddings(merge = true) {
+//   await loadModelIfNeeded();
+
+//   const files = await RNFS.readDir(EXTRACT_PATH);
+//   const imageFiles = files.filter(f => f.isFile() && /\.(jpg|jpeg|png)$/i.test(f.name));
+
+//   const existing = merge ? await loadExistingCache() : [];
+//   const newEmbeddings = [];
+
+//   for (const file of imageFiles) {
+//     const id = file.name.replace(/\.[^.]+$/, '');
+
+//     // Skip if already cached
+//     if (existing.some(e => e.id === id)) continue;
+
+//     try {
+//       const result = model.runModelOnImage({
+//         path: file.path,
+//         mean: 128,
+//         std: 128,
+//       });
+
+//       if (result?.[0]?.output) {
+//         newEmbeddings.push({ id, embedding: result[0].output });
+//         console.log(`✅ Embedded: ${id}`);
+//       } else {
+//         console.warn(`⚠️ No output for ${id}`);
+//       }
+//     } catch (err) {
+//       console.error(`❌ Error processing ${id}:`, err);
+//     }
+//   }
+
+//   const fullCache = [...existing, ...newEmbeddings];
+//   await saveCache(fullCache);
+//   console.log(`🧠 Updated embedding cache with ${newEmbeddings.length} new entries`);
+
+//   return fullCache;
+// }
+
 export async function generateEmbeddings(merge = true) {
   await loadModelIfNeeded();
 
@@ -80,14 +120,13 @@ export async function generateEmbeddings(merge = true) {
     if (existing.some(e => e.id === id)) continue;
 
     try {
-      const result = model.runModelOnImage({
-        path: file.path,
-        mean: 128,
-        std: 128,
-      });
+      const rgbData = await decodeImageToRGB(file.path, 112, 112); // resized + RGB
+      const normalized = normalizeRGB(rgbData); // Float32Array
 
-      if (result?.[0]?.output) {
-        newEmbeddings.push({ id, embedding: result[0].output });
+      const result = await model.run([normalized]); // async run
+
+      if (result?.[0]) {
+        newEmbeddings.push({ id, embedding: result[0] });
         console.log(`✅ Embedded: ${id}`);
       } else {
         console.warn(`⚠️ No output for ${id}`);
@@ -103,6 +142,7 @@ export async function generateEmbeddings(merge = true) {
 
   return fullCache;
 }
+
 
 /**
  * Loads the current embedding cache.
