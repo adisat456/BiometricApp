@@ -126,7 +126,11 @@ export async function generateEmbeddings(merge = true) {
       const result = await model.run([normalized]); // async run
 
       if (result?.[0]) {
-        newEmbeddings.push({ id, embedding: result[0] });
+        console.log(`📎 Embedding sample for ${id}:`, result[0].slice(0, 10));
+      }
+
+      if (result?.[0]) {
+        newEmbeddings.push({ id, embedding: Array.from(result[0]) });
         console.log(`✅ Embedded: ${id}`);
       } else {
         console.warn(`⚠️ No output for ${id}`);

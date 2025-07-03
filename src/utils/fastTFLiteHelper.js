@@ -110,11 +110,14 @@ export async function runFaceRecognitionFromRGB(rgbData, callback) {
   try {
     const referenceEmbeddings = await loadCachedEmbeddings();
 
-    console.log('Reference embeddings loaded:', referenceEmbeddings);
+    // console.log('Reference embeddings loaded:', referenceEmbeddings);
 
     const input = normalizeRGB(rgbData); // Float32Array
     const result = await model.run([input]); // returns [embedding array]
     const embedding = result[0];
+    console.log('📊 Embedding from RGB input:', embedding);
+    console.log('Embedding from reference :', referenceEmbeddings);
+
 
     let bestMatch = null;
     let bestScore = -1;
@@ -122,6 +125,7 @@ export async function runFaceRecognitionFromRGB(rgbData, callback) {
     for (const reference of referenceEmbeddings) {
       const refEmbeddingArray = Object.values(reference.embedding);
       const score = cosineSimilarity(embedding, refEmbeddingArray);
+      console.log(`Comparing with ${reference.id}: Score = ${score}`);
       if (score > bestScore) {
         bestScore = score;
         bestMatch = reference;
