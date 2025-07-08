@@ -62,14 +62,6 @@ export default function CameraScreen() {
       // Decode the image to RGB format
       const rgbBuffer = await decodeImageToRGB(destPath, 112, 112);
 
-      // matchFace(destPath, (matched, id) => {
-      //   setProcessing(false);
-      //   if (matched) {
-      //     Alert.alert('✅ Verified', `Matched with: ${id}`);
-      //   } else {
-      //     Alert.alert('❌ Not Verified', 'No match found');
-      //   }
-      // });
       runFaceRecognitionFromRGB(rgbBuffer, (matched, id) => {
         setProcessing(false);
         if (matched) {
