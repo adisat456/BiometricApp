@@ -130,6 +130,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import UploadZipScreen from './src/screens/UploadZipScreen';
 import CameraScreen from './src/screens/CameraScreen';
 import { View, Button, StyleSheet, useColorScheme } from 'react-native';
+import FingerprintScreen from './src/screens/FingerprintScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -151,6 +152,10 @@ function HomeScreen({ navigation }: HomeScreenProps) {
         title="📸 Capture & Verify Face"
         onPress={() => navigation.navigate('Camera')}
       />
+      <Button
+        title="🖐️ Fingerprint Capture"
+        onPress={() => navigation.navigate('Fingerprint')}
+      />
     </View>
   );
 }
@@ -164,6 +169,7 @@ function App() {
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="UploadZip" component={UploadZipScreen} options={{ title: 'Upload ZIP' }} />
         <Stack.Screen name="Camera" component={CameraScreen} options={{ title: 'Verify Face' }} />
+        <Stack.Screen name="Fingerprint" component={FingerprintScreen} options={{ title: 'Fingerprint' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
